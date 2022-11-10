@@ -4,6 +4,8 @@ from flask_admin import Admin, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask import redirect
 from flask_login import logout_user, current_user
+from wtforms import TextAreaField
+from wtforms.widgets import TextArea
 
 admin = Admin(app=app, name='Quản trị bán hàng', template_mode='bootstrap4')
 
@@ -18,17 +20,36 @@ class AuthenticatedView(BaseView):
         return current_user.is_authenticated
 
 
+class CKTextAreaWidget(TextArea):
+    def __call__(self, field, **kwargs):
+        if kwargs.get('class'):
+            kwargs['class'] += ' ckeditor'
+        else:
+            kwargs.setdefault('class', 'ckeditor')
+
+        return super().__call__(field, **kwargs)
+
+
+class CKTextAreaField(TextAreaField):
+    widget = CKTextAreaWidget()
+
+
 class ProductView(AuthenticatedModelView):
     column_searchable_list = ['name', 'description']
     column_filters = ['name', 'price']
     can_view_details = True
-    column_exclude_list = ['image']
+    column_exclude_list = ['image', 'description']
     can_export = True
     column_export_list = ['id', 'name', 'description', 'price']
     column_labels = {
         'name': 'Tên sản phẩm',
         'description': 'Mô tả',
         'price': 'Gía'
+    }
+    page_size = 5
+    extra_js = ['//cdn.ckeditor.com/4.6.0/standard/ckeditor.js']
+    form_overrides = {
+        'description': CKTextAreaField
     }
 
 

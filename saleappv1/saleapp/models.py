@@ -42,7 +42,7 @@ class Product(BaseModel):
 
 class User (BaseModel, UserMixin):
     name = Column(String(50), nullable=False)
-    username = Column(String(50), nullable=False)
+    username = Column(String(50), nullable=False, unique=True)
     password = Column(String(50), nullable=False)
     avatar = Column(String(100), nullable=False)
     active = Column(Boolean, default=True)
@@ -50,9 +50,6 @@ class User (BaseModel, UserMixin):
 
     def __str__(self):
         return self.name
-
-
-
 
 
 if __name__ == '__main__':
