@@ -11,6 +11,9 @@
         <h1>{{ product.name }}</h1>
         <p>{{ product.description|safe }}</p>
         <h3>{{ "{:,.1f}".format(product.price) }} VNĐ</h3>
+        {% for t in product.tags %}
+        <span class="badge bg-success">{{t.name}}</span>
+        {% endfor %}
     </div>
 </div>
 
