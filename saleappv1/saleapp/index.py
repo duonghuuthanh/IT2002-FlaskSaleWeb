@@ -1,5 +1,5 @@
-from flask import render_template, request, redirect
-from saleapp import app, dao, admin, login
+from flask import render_template, request, redirect, session, jsonify
+from saleapp import app, dao, admin, login, utils
 from flask_login import login_user, logout_user
 from saleapp.decorator import annonynous_user
 import cloudinary.uploader
@@ -61,7 +61,6 @@ def register():
             avatar = ''
             if request.files:
                 res = cloudinary.uploader.upload(request.files['avatar'])
-                print(res)
                 avatar = res['secure_url']
 
             try:
@@ -76,6 +75,51 @@ def register():
             err_msg = 'Mật khẩu KHÔNG khớp!'
 
     return render_template('register.html', err_msg=err_msg)
+
+
+@app.route('/cart')
+def cart():
+    # session['cart'] = {
+    #     "1": {
+    #         "id": "1",
+    #         "name": "iPhone 13",
+    #         "price": 12000,
+    #         "quantity": 2
+    #     },
+    #     "2": {
+    #         "id": "2",
+    #         "name": "iPhone 14",
+    #         "price": 15000,
+    #         "quantity": 1
+    #     }
+    # }
+    return render_template('cart.html')
+
+
+@app.route('/api/cart', methods=['post'])
+def add_to_cart():
+    data = request.json
+
+    key = app.config['CART_KEY']
+    cart = session[key] if key in session else {}
+
+    id = str(data['id'])
+    name = data['name']
+    price = data['price']
+
+    if id in cart:
+        cart[id]['quantity'] += 1
+    else:
+        cart[id] = {
+            "id": id,
+            "name": name,
+            "price": price,
+            "quantity": 1
+        }
+
+    session[key] = cart
+
+    return jsonify(utils.cart_stats(cart))
 
 
 @login.user_loader
