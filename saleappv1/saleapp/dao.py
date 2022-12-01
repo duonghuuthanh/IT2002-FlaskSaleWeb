@@ -1,6 +1,7 @@
 from saleapp.models import Category, Product, User, Receipt, ReceiptDetails
 from saleapp import db
 from flask_login import current_user
+from sqlalchemy import func
 import hashlib
 
 
@@ -52,9 +53,34 @@ def add_receipt(cart):
                                receipt=r, product_id=c['id'])
             db.session.add(d)
 
-        try:
-            db.session.commit()
-        except:
-            return False
-        else:
-            return True
+        db.session.commit()
+
+
+def count_product_by_cate():
+    return db.session.query(Category.id, Category.name, func.count(Product.id)) \
+        .join(Product, Product.category_id.__eq__(Category.id), isouter=True) \
+        .group_by(Category.id).order_by(-Category.name).all()
+
+
+def stats_revenue_by_prod(kw=None, from_date=None, to_date=None):
+    query = db.session.query(Product.id, Product.name, func.sum(ReceiptDetails.quantity * ReceiptDetails.price)) \
+        .join(ReceiptDetails, ReceiptDetails.product_id.__eq__(Product.id)) \
+        .join(Receipt, ReceiptDetails.receipt_id.__eq__(Receipt.id))
+
+    if kw:
+        query = query.filter(Product.name.contains(kw))
+
+    if from_date:
+        query = query.filter(Receipt.created_date.__ge__(from_date))
+
+    if to_date:
+        query = query.filter(Receipt.created_date.__le__(to_date))
+
+    return query.group_by(Product.id).all()
+
+
+if __name__ == '__main__':
+    from saleapp import app
+
+    with app.app_context():
+        print(count_product_by_cate())

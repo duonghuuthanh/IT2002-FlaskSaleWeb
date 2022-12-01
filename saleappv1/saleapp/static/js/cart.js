@@ -59,7 +59,7 @@ function deleteCart(productId) {
 
 function pay() {
     if (confirm("Bạn chắc chắn thanh toán không?")) {
-        fetch("/pay").then(res => res.json()).then(data => {
+        fetch("/api/pay").then(res => res.json()).then(data => {
             if (data.status === 200)
                 location.reload()
         })
