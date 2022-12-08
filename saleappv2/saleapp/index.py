@@ -13,6 +13,8 @@ app.add_url_rule('/cart', 'cart', controllers.cart)
 app.add_url_rule('/api/cart', 'add-cart', controllers.add_to_cart, methods=['post'])
 app.add_url_rule('/api/cart/<product_id>', 'update-cart', controllers.update_cart, methods=['put'])
 app.add_url_rule('/api/cart/<product_id>', 'delete-cart', controllers.delete_cart, methods=['delete'])
+app.add_url_rule('/api/products/<int:product_id>/comments', 'comment-list', controllers.comments)
+app.add_url_rule('/api/products/<int:product_id>/comments', 'comment-add', controllers.add_commment, methods=['post'])
 
 
 @login.user_loader

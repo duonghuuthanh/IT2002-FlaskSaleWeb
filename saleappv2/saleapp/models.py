@@ -42,6 +42,7 @@ class Product(BaseModel):
     tags = relationship('Tag', secondary='prod_tag', lazy='subquery',
                         backref=backref('products', lazy=True))
     receipt_details = relationship('ReceiptDetails', backref='product', lazy=True)
+    comments = relationship('Comment', backref='product', lazy=True)
 
     def __str__(self):
         return self.name
@@ -56,12 +57,13 @@ class Tag(BaseModel):
 
 class User(BaseModel, UserMixin):
     name = Column(String(50), nullable=False)
-    username = Column(String(50), nullable=False)
+    username = Column(String(50), nullable=False, unique=True)
     password = Column(String(50), nullable=False)
     avatar = Column(String(100), nullable=False)
     active = Column(Boolean, default=True)
     user_role = Column(Enum(UserRole), default=UserRole.USER)
     receipts = relationship('Receipt', backref='user', lazy=True)
+    comments = relationship('Comment', backref='user', lazy=True)
 
     def __str__(self):
         return self.name
@@ -80,35 +82,56 @@ class ReceiptDetails(BaseModel):
     receipt_id = Column(Integer, ForeignKey(Receipt.id), nullable=False)
 
 
+class Comment(BaseModel):
+    content = Column(String(255), nullable=False)
+    created_date = Column(DateTime, default=datetime.now())
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    product_id = Column(Integer, ForeignKey(Product.id), nullable=False)
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
 
-        # import hashlib
-        # password = str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
-        #
-        # u = User(name='Thanh', username='admin', password=password, user_role=UserRole.ADMIN,
-        #          avatar='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg')
-        # db.session.add(u)
-        # db.session.commit()
+        import hashlib
 
-        # c1 = Category(name='Điện thoại')
-        # c2 = Category(name='Máy tính bảng')
-        # c3 = Category(name='Phụ kiện')
-        #
-        # db.session.add_all([c1, c2, c3])
-        # db.session.commit()
-        # p1 = Product(name='Galaxy S22 Pro', description='Samsung, 128GB', price=25000000,
-        #              image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
-        #              category_id=1)
-        # p2 = Product(name='Galaxy Fold 4', description='Samsung, 128GB', price=38000000,
-        #              image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1647248722/r8sjly3st7estapvj19u.jpg',
-        #              category_id=1)
-        # p3 = Product(name='Apple Watch S5', description='Apple, 32GB', price=18000000,
-        #              image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
-        #              category_id=3)
-        # p4 = Product(name='Galaxy Tab S8', description='Samsung, 128GB', price=22000000,
-        #              image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
-        #              category_id=2)
-        # db.session.add_all([p1, p2, p3, p4])
-        # db.session.commit()
+        password = str(hashlib.md5('123456'.encode('utf-8')).hexdigest())
+        u1 = User(name='Thanh', username='admin', password=password, user_role=UserRole.ADMIN,
+                  avatar='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg')
+        u2 = User(name='Huu Thanh', username='dhthanh', password=password, user_role=UserRole.USER,
+                  avatar='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg')
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.commit()
+
+        c1 = Category(name='Điện thoại')
+        c2 = Category(name='Máy tính bảng')
+        c3 = Category(name='Phụ kiện')
+
+        db.session.add_all([c1, c2, c3])
+        db.session.commit()
+
+        p1 = Product(name='Galaxy S22 Pro', description='Samsung, 128GB', price=25000000,
+                     image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
+                     category_id=1)
+        p2 = Product(name='Galaxy Fold 4', description='Samsung, 128GB', price=38000000,
+                     image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1647248722/r8sjly3st7estapvj19u.jpg',
+                     category_id=1)
+        p3 = Product(name='Apple Watch S5', description='Apple, 32GB', price=18000000,
+                     image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
+                     category_id=3)
+        p4 = Product(name='Galaxy Tab S8', description='Samsung, 128GB', price=22000000,
+                     image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
+                     category_id=2)
+        p5 = Product(name='iPhone 14', description='Apple, 128GB', price=27000000,
+                     image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
+                     category_id=1)
+        p6 = Product(name='iPad Pro 2022', description='Apple, 256GB', price=38000000,
+                     image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1647248722/r8sjly3st7estapvj19u.jpg',
+                     category_id=2)
+        p7 = Product(name='Galaxy Z Fold 5', description='Samsung, 128GB', price=24000000,
+                     image='https://res.cloudinary.com/dxxwcby8l/image/upload/v1646729569/fi9v6vdljyfmiltegh7k.jpg',
+                     category_id=2)
+
+        db.session.add_all([p1, p2, p3, p4, p5, p6, p7])
+        db.session.commit()
