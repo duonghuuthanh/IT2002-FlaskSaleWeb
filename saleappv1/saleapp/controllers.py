@@ -139,4 +139,38 @@ def pay():
         return jsonify({'status': 200})
 
 
+def comments(product_id):
+    data = []
+    for c in dao.load_comments(product_id):
+        data.append({
+            "id": c.id,
+            "content": c.content,
+            "created_date": str(c.created_date),
+            "user": {
+                "name": c.user.name,
+                "avatar": c.user.avatar
+            }
+        })
+
+    return jsonify(data)
+
+
+def add_comment(product_id):
+    try:
+        c = dao.save_comment(product_id=product_id, content=request.json['content'])
+    except:
+        return jsonify({'status': 500})
+    else:
+        return jsonify({
+            'status': 204,
+            'comment': {
+                "id": c.id,
+                "content": c.content,
+                "created_date": str(c.created_date),
+                "user": {
+                    "name": c.user.name,
+                    "avatar": c.user.avatar
+                }
+            }
+        })
 
